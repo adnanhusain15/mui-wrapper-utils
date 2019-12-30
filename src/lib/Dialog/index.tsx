@@ -68,7 +68,7 @@ const DialogActions: FC<DialogActionProps> = props => {
 }
 
 
-const AppDialog: FC<DialogProps> = (props) => {
+export const AppDialog: FC<DialogProps> = (props) => {
     const { title, handleClose, children, maxWidth = "sm", contentProps, isActionCloseButton = true, closeButtonText, actionsChildren, ...rest } = props;
     console.log('Rest props', rest);
     const handleDialogClose = () => {
