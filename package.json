@@ -20,13 +20,19 @@
   },
   "peerDependencies": {
     "react": "^16.12.0",
-    "react-dom": "^16.12.0"
+    "react-dom": "^16.12.0",
+    "@material-ui/core": "^4.8.1",
+    "@material-ui/icons": "^4.5.1",
+    "clsx": "^1.0.4"
   },
   "devDependencies": {
+    "@material-ui/core": "^4.8.1",
+    "@material-ui/icons": "^4.5.1",
     "@types/jest": "^24.0.25",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",
     "@types/react-test-renderer": "^16.9.1",
+    "clsx": "^1.0.4",
     "jest": "^24.9.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
@@ -40,9 +46,5 @@
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.4"
   },
-  "dependencies": {
-    "@material-ui/core": "^4.8.1",
-    "@material-ui/icons": "^4.5.1",
-    "clsx": "^1.0.4"
-  }
+  "dependencies": {}
 }
