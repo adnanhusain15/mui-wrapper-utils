@@ -20,5 +20,5 @@ export interface DialogActionProps {
     actionsChildren?: React.ReactNode;
     onClose?: Function;
 }
-declare const AppDialog: FC<DialogProps>;
+export declare const AppDialog: FC<DialogProps>;
 export default AppDialog;

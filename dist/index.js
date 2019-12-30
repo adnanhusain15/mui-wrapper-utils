@@ -222,6 +222,19 @@ function getLuminance(color) {
   return Number((0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]).toFixed(3));
 }
 /**
+ * Darken or lighten a color, depending on its luminance.
+ * Light colors are darkened, dark colors are lightened.
+ *
+ * @param {string} color - CSS color, i.e. one of: #nnn, #nnnnnn, rgb(), rgba(), hsl(), hsla()
+ * @param {number} coefficient=0.15 - multiplier in the range 0 - 1
+ * @returns {string} A CSS color string. Hex input values are returned as rgb
+ */
+
+function emphasize(color) {
+  var coefficient = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0.15;
+  return getLuminance(color) > 0.5 ? darken(color, coefficient) : lighten(color, coefficient);
+}
+/**
  * Set the absolute transparency of a color.
  * Any existing alpha values are overwritten.
  *
@@ -11134,7 +11147,7 @@ process.env.NODE_ENV !== "production" ? Paper.propTypes = {
    */
   variant: propTypes.oneOf(['elevation', 'outlined'])
 } : void 0;
-var require$$11 = withStyles$1(styles$4, {
+var Paper$1 = withStyles$1(styles$4, {
   name: 'MuiPaper'
 })(Paper);
 
@@ -11171,7 +11184,7 @@ var _Fade = interopRequireDefault(Fade);
 
 
 
-var _Paper = interopRequireDefault(require$$11);
+var _Paper = interopRequireDefault(Paper$1);
 
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 var styles = function styles(theme) {
@@ -13933,6 +13946,914 @@ var useDialogTitleStyles = makeStyles$1(function (theme) {
     }));
 });
 
+function mapEventPropToEvent(eventProp) {
+  return eventProp.substring(2).toLowerCase();
+}
+/**
+ * Listen for click events that occur somewhere in the document, outside of the element itself.
+ * For instance, if you need to hide a menu when people click anywhere else on your page.
+ */
+
+
+var ClickAwayListener = React__default.forwardRef(function ClickAwayListener(props, ref) {
+  var children = props.children,
+      _props$mouseEvent = props.mouseEvent,
+      mouseEvent = _props$mouseEvent === void 0 ? 'onClick' : _props$mouseEvent,
+      _props$touchEvent = props.touchEvent,
+      touchEvent = _props$touchEvent === void 0 ? 'onTouchEnd' : _props$touchEvent,
+      onClickAway = props.onClickAway;
+  var movedRef = React__default.useRef(false);
+  var nodeRef = React__default.useRef(null);
+  var mountedRef = React__default.useRef(false);
+  React__default.useEffect(function () {
+    mountedRef.current = true;
+    return function () {
+      mountedRef.current = false;
+    };
+  }, []);
+  var handleNodeRef = useForkRef(nodeRef, ref); // can be removed once we drop support for non ref forwarding class components
+
+  var handleOwnRef = React__default.useCallback(function (instance) {
+    // #StrictMode ready
+    setRef(handleNodeRef, ReactDOM.findDOMNode(instance));
+  }, [handleNodeRef]);
+  var handleRef = useForkRef(children.ref, handleOwnRef);
+  var handleClickAway = useEventCallback(function (event) {
+    // The handler doesn't take event.defaultPrevented into account:
+    //
+    // event.preventDefault() is meant to stop default behaviours like
+    // clicking a checkbox to check it, hitting a button to submit a form,
+    // and hitting left arrow to move the cursor in a text input etc.
+    // Only special HTML elements have these default behaviors.
+    // IE 11 support, which trigger the handleClickAway even after the unbind
+    if (!mountedRef.current) {
+      return;
+    } // Do not act if user performed touchmove
+
+
+    if (movedRef.current) {
+      movedRef.current = false;
+      return;
+    } // The child might render null.
+
+
+    if (!nodeRef.current) {
+      return;
+    } // Multi window support
+
+
+    var doc = ownerDocument(nodeRef.current);
+
+    if (doc.documentElement && doc.documentElement.contains(event.target) && !nodeRef.current.contains(event.target)) {
+      onClickAway(event);
+    }
+  });
+  var handleTouchMove = React__default.useCallback(function () {
+    movedRef.current = true;
+  }, []);
+  React__default.useEffect(function () {
+    if (touchEvent !== false) {
+      var mappedTouchEvent = mapEventPropToEvent(touchEvent);
+      var doc = ownerDocument(nodeRef.current);
+      doc.addEventListener(mappedTouchEvent, handleClickAway);
+      doc.addEventListener('touchmove', handleTouchMove);
+      return function () {
+        doc.removeEventListener(mappedTouchEvent, handleClickAway);
+        doc.removeEventListener('touchmove', handleTouchMove);
+      };
+    }
+
+    return undefined;
+  }, [handleClickAway, handleTouchMove, touchEvent]);
+  React__default.useEffect(function () {
+    if (mouseEvent !== false) {
+      var mappedMouseEvent = mapEventPropToEvent(mouseEvent);
+      var doc = ownerDocument(nodeRef.current);
+      doc.addEventListener(mappedMouseEvent, handleClickAway);
+      return function () {
+        doc.removeEventListener(mappedMouseEvent, handleClickAway);
+      };
+    }
+
+    return undefined;
+  }, [handleClickAway, mouseEvent]);
+  return React__default.createElement(React__default.Fragment, null, React__default.cloneElement(children, {
+    ref: handleRef
+  }));
+});
+process.env.NODE_ENV !== "production" ? ClickAwayListener.propTypes = {
+  /**
+   * The wrapped element.
+   */
+  children: elementAcceptingRef.isRequired,
+
+  /**
+   * The mouse event to listen to. You can disable the listener by providing `false`.
+   */
+  mouseEvent: propTypes.oneOf(['onClick', 'onMouseDown', 'onMouseUp', false]),
+
+  /**
+   * Callback fired when a "click away" event is detected.
+   */
+  onClickAway: propTypes.func.isRequired,
+
+  /**
+   * The touch event to listen to. You can disable the listener by providing `false`.
+   */
+  touchEvent: propTypes.oneOf(['onTouchStart', 'onTouchEnd', false])
+} : void 0;
+
+if (process.env.NODE_ENV !== 'production') {
+  // eslint-disable-next-line
+  ClickAwayListener['propTypes' + ''] = exactProp(ClickAwayListener.propTypes);
+}
+
+function getScale(value) {
+  return "scale(".concat(value, ", ").concat(Math.pow(value, 2), ")");
+}
+
+var styles$e = {
+  entering: {
+    opacity: 1,
+    transform: getScale(1)
+  },
+  entered: {
+    opacity: 1,
+    transform: 'none'
+  }
+};
+/**
+ * The Grow transition is used by the [Tooltip](/components/tooltips/) and
+ * [Popover](/components/popover/) components.
+ * It uses [react-transition-group](https://github.com/reactjs/react-transition-group) internally.
+ */
+
+var Grow = React__default.forwardRef(function Grow(props, ref) {
+  var children = props.children,
+      inProp = props.in,
+      onEnter = props.onEnter,
+      onExit = props.onExit,
+      style = props.style,
+      _props$timeout = props.timeout,
+      timeout = _props$timeout === void 0 ? 'auto' : _props$timeout,
+      other = _objectWithoutProperties(props, ["children", "in", "onEnter", "onExit", "style", "timeout"]);
+
+  var timer = React__default.useRef();
+  var autoTimeout = React__default.useRef();
+  var handleRef = useForkRef(children.ref, ref);
+  var theme = useTheme$1();
+
+  var handleEnter = function handleEnter(node, isAppearing) {
+    reflow(node); // So the animation always start from the start.
+
+    var _getTransitionProps = getTransitionProps({
+      style: style,
+      timeout: timeout
+    }, {
+      mode: 'enter'
+    }),
+        transitionDuration = _getTransitionProps.duration,
+        delay = _getTransitionProps.delay;
+
+    var duration;
+
+    if (timeout === 'auto') {
+      duration = theme.transitions.getAutoHeightDuration(node.clientHeight);
+      autoTimeout.current = duration;
+    } else {
+      duration = transitionDuration;
+    }
+
+    node.style.transition = [theme.transitions.create('opacity', {
+      duration: duration,
+      delay: delay
+    }), theme.transitions.create('transform', {
+      duration: duration * 0.666,
+      delay: delay
+    })].join(',');
+
+    if (onEnter) {
+      onEnter(node, isAppearing);
+    }
+  };
+
+  var handleExit = function handleExit(node) {
+    var _getTransitionProps2 = getTransitionProps({
+      style: style,
+      timeout: timeout
+    }, {
+      mode: 'exit'
+    }),
+        transitionDuration = _getTransitionProps2.duration,
+        delay = _getTransitionProps2.delay;
+
+    var duration;
+
+    if (timeout === 'auto') {
+      duration = theme.transitions.getAutoHeightDuration(node.clientHeight);
+      autoTimeout.current = duration;
+    } else {
+      duration = transitionDuration;
+    }
+
+    node.style.transition = [theme.transitions.create('opacity', {
+      duration: duration,
+      delay: delay
+    }), theme.transitions.create('transform', {
+      duration: duration * 0.666,
+      delay: delay || duration * 0.333
+    })].join(',');
+    node.style.opacity = '0';
+    node.style.transform = getScale(0.75);
+
+    if (onExit) {
+      onExit(node);
+    }
+  };
+
+  var addEndListener = function addEndListener(_, next) {
+    if (timeout === 'auto') {
+      timer.current = setTimeout(next, autoTimeout.current || 0);
+    }
+  };
+
+  React__default.useEffect(function () {
+    return function () {
+      clearTimeout(timer.current);
+    };
+  }, []);
+  return React__default.createElement(Transition, _extends({
+    appear: true,
+    in: inProp,
+    onEnter: handleEnter,
+    onExit: handleExit,
+    addEndListener: addEndListener,
+    timeout: timeout === 'auto' ? null : timeout
+  }, other), function (state, childProps) {
+    return React__default.cloneElement(children, _extends({
+      style: _extends({
+        opacity: 0,
+        transform: getScale(0.75),
+        visibility: state === 'exited' && !inProp ? 'hidden' : undefined
+      }, styles$e[state], {}, style, {}, children.props.style),
+      ref: handleRef
+    }, childProps));
+  });
+});
+process.env.NODE_ENV !== "production" ? Grow.propTypes = {
+  /**
+   * A single child content element.
+   */
+  children: propTypes.element,
+
+  /**
+   * If `true`, show the component; triggers the enter or exit animation.
+   */
+  in: propTypes.bool,
+
+  /**
+   * @ignore
+   */
+  onEnter: propTypes.func,
+
+  /**
+   * @ignore
+   */
+  onExit: propTypes.func,
+
+  /**
+   * @ignore
+   */
+  style: propTypes.object,
+
+  /**
+   * The duration for the transition, in milliseconds.
+   * You may specify a single timeout for all transitions, or individually with an object.
+   *
+   * Set to 'auto' to automatically calculate transition time based on height.
+   */
+  timeout: propTypes.oneOfType([propTypes.number, propTypes.shape({
+    enter: propTypes.number,
+    exit: propTypes.number
+  }), propTypes.oneOf(['auto'])])
+} : void 0;
+Grow.muiSupportAuto = true;
+
+var styles$f = function styles(theme) {
+  var emphasis = theme.palette.type === 'light' ? 0.8 : 0.98;
+  var backgroundColor = emphasize(theme.palette.background.default, emphasis);
+  return {
+    /* Styles applied to the root element. */
+    root: _extends({}, theme.typography.body2, _defineProperty({
+      color: theme.palette.getContrastText(backgroundColor),
+      backgroundColor: backgroundColor,
+      display: 'flex',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      padding: '6px 16px',
+      borderRadius: theme.shape.borderRadius,
+      flexGrow: 1
+    }, theme.breakpoints.up('sm'), {
+      flexGrow: 'initial',
+      minWidth: 288
+    })),
+
+    /* Styles applied to the message wrapper element. */
+    message: {
+      padding: '8px 0'
+    },
+
+    /* Styles applied to the action wrapper element if `action` is provided. */
+    action: {
+      display: 'flex',
+      alignItems: 'center',
+      marginLeft: 'auto',
+      paddingLeft: 16,
+      marginRight: -8
+    }
+  };
+};
+var SnackbarContent = React__default.forwardRef(function SnackbarContent(props, ref) {
+  var action = props.action,
+      classes = props.classes,
+      className = props.className,
+      message = props.message,
+      _props$role = props.role,
+      role = _props$role === void 0 ? 'alert' : _props$role,
+      other = _objectWithoutProperties(props, ["action", "classes", "className", "message", "role"]);
+
+  return React__default.createElement(Paper$1, _extends({
+    role: role,
+    square: true,
+    elevation: 6,
+    className: clsx(classes.root, className),
+    ref: ref
+  }, other), React__default.createElement("div", {
+    className: classes.message
+  }, message), action ? React__default.createElement("div", {
+    className: classes.action
+  }, action) : null);
+});
+process.env.NODE_ENV !== "production" ? SnackbarContent.propTypes = {
+  /**
+   * The action to display.
+   */
+  action: propTypes.node,
+
+  /**
+   * Override or extend the styles applied to the component.
+   * See [CSS API](#css) below for more details.
+   */
+  classes: propTypes.object.isRequired,
+
+  /**
+   * @ignore
+   */
+  className: propTypes.string,
+
+  /**
+   * The message to display.
+   */
+  message: propTypes.node,
+
+  /**
+   * The role of the SnackbarContent. If the Snackbar requires focus
+   * to be closed, the `alertdialog` role should be used instead.
+   */
+  role: propTypes.oneOf(['alert', 'alertdialog'])
+} : void 0;
+var SnackbarContent$1 = withStyles$1(styles$f, {
+  name: 'MuiSnackbarContent'
+})(SnackbarContent);
+
+var styles$g = function styles(theme) {
+  var top1 = {
+    top: 8
+  };
+  var bottom1 = {
+    bottom: 8
+  };
+  var right = {
+    justifyContent: 'flex-end'
+  };
+  var left = {
+    justifyContent: 'flex-start'
+  };
+  var top3 = {
+    top: 24
+  };
+  var bottom3 = {
+    bottom: 24
+  };
+  var right3 = {
+    right: 24
+  };
+  var left3 = {
+    left: 24
+  };
+  var center = {
+    left: '50%',
+    right: 'auto',
+    transform: 'translateX(-50%)'
+  };
+  return {
+    /* Styles applied to the root element. */
+    root: {
+      zIndex: theme.zIndex.snackbar,
+      position: 'fixed',
+      display: 'flex',
+      left: 8,
+      right: 8,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+
+    /* Styles applied to the root element if `anchorOrigin={{ 'top', 'center' }}`. */
+    anchorOriginTopCenter: _extends({}, top1, _defineProperty({}, theme.breakpoints.up('sm'), _extends({}, top3, {}, center))),
+
+    /* Styles applied to the root element if `anchorOrigin={{ 'bottom', 'center' }}`. */
+    anchorOriginBottomCenter: _extends({}, bottom1, _defineProperty({}, theme.breakpoints.up('sm'), _extends({}, bottom3, {}, center))),
+
+    /* Styles applied to the root element if `anchorOrigin={{ 'top', 'right' }}`. */
+    anchorOriginTopRight: _extends({}, top1, {}, right, _defineProperty({}, theme.breakpoints.up('sm'), _extends({
+      left: 'auto'
+    }, top3, {}, right3))),
+
+    /* Styles applied to the root element if `anchorOrigin={{ 'bottom', 'right' }}`. */
+    anchorOriginBottomRight: _extends({}, bottom1, {}, right, _defineProperty({}, theme.breakpoints.up('sm'), _extends({
+      left: 'auto'
+    }, bottom3, {}, right3))),
+
+    /* Styles applied to the root element if `anchorOrigin={{ 'top', 'left' }}`. */
+    anchorOriginTopLeft: _extends({}, top1, {}, left, _defineProperty({}, theme.breakpoints.up('sm'), _extends({
+      right: 'auto'
+    }, top3, {}, left3))),
+
+    /* Styles applied to the root element if `anchorOrigin={{ 'bottom', 'left' }}`. */
+    anchorOriginBottomLeft: _extends({}, bottom1, {}, left, _defineProperty({}, theme.breakpoints.up('sm'), _extends({
+      right: 'auto'
+    }, bottom3, {}, left3)))
+  };
+};
+var Snackbar = React__default.forwardRef(function Snackbar(props, ref) {
+  var action = props.action,
+      _props$anchorOrigin = props.anchorOrigin;
+  _props$anchorOrigin = _props$anchorOrigin === void 0 ? {
+    vertical: 'bottom',
+    horizontal: 'center'
+  } : _props$anchorOrigin;
+
+  var vertical = _props$anchorOrigin.vertical,
+      horizontal = _props$anchorOrigin.horizontal,
+      autoHideDuration = props.autoHideDuration,
+      children = props.children,
+      classes = props.classes,
+      className = props.className,
+      ClickAwayListenerProps = props.ClickAwayListenerProps,
+      ContentProps = props.ContentProps,
+      _props$disableWindowB = props.disableWindowBlurListener,
+      disableWindowBlurListener = _props$disableWindowB === void 0 ? false : _props$disableWindowB,
+      message = props.message,
+      onClose = props.onClose,
+      onEnter = props.onEnter,
+      onEntered = props.onEntered,
+      onEntering = props.onEntering,
+      onExit = props.onExit,
+      onExited = props.onExited,
+      onExiting = props.onExiting,
+      onMouseEnter = props.onMouseEnter,
+      onMouseLeave = props.onMouseLeave,
+      open = props.open,
+      resumeHideDuration = props.resumeHideDuration,
+      _props$TransitionComp = props.TransitionComponent,
+      TransitionComponent = _props$TransitionComp === void 0 ? Grow : _props$TransitionComp,
+      _props$transitionDura = props.transitionDuration,
+      transitionDuration = _props$transitionDura === void 0 ? {
+    enter: duration.enteringScreen,
+    exit: duration.leavingScreen
+  } : _props$transitionDura,
+      TransitionProps = props.TransitionProps,
+      other = _objectWithoutProperties(props, ["action", "anchorOrigin", "autoHideDuration", "children", "classes", "className", "ClickAwayListenerProps", "ContentProps", "disableWindowBlurListener", "message", "onClose", "onEnter", "onEntered", "onEntering", "onExit", "onExited", "onExiting", "onMouseEnter", "onMouseLeave", "open", "resumeHideDuration", "TransitionComponent", "transitionDuration", "TransitionProps"]);
+
+  var timerAutoHide = React__default.useRef();
+
+  var _React$useState = React__default.useState(true),
+      exited = _React$useState[0],
+      setExited = _React$useState[1];
+
+  var handleClose = useEventCallback(function () {
+    if (onClose) {
+      onClose.apply(void 0, arguments);
+    }
+  });
+  var setAutoHideTimer = useEventCallback(function (autoHideDurationParam) {
+    if (!onClose || autoHideDurationParam == null) {
+      return;
+    }
+
+    clearTimeout(timerAutoHide.current);
+    timerAutoHide.current = setTimeout(function () {
+      handleClose(null, 'timeout');
+    }, autoHideDurationParam);
+  });
+  React__default.useEffect(function () {
+    if (open) {
+      setAutoHideTimer(autoHideDuration);
+    }
+
+    return function () {
+      clearTimeout(timerAutoHide.current);
+    };
+  }, [open, autoHideDuration, setAutoHideTimer]); // Pause the timer when the user is interacting with the Snackbar
+  // or when the user hide the window.
+
+  var handlePause = function handlePause() {
+    clearTimeout(timerAutoHide.current);
+  }; // Restart the timer when the user is no longer interacting with the Snackbar
+  // or when the window is shown back.
+
+
+  var handleResume = React__default.useCallback(function () {
+    if (autoHideDuration != null) {
+      setAutoHideTimer(resumeHideDuration != null ? resumeHideDuration : autoHideDuration * 0.5);
+    }
+  }, [autoHideDuration, resumeHideDuration, setAutoHideTimer]);
+
+  var handleMouseEnter = function handleMouseEnter(event) {
+    if (onMouseEnter) {
+      onMouseEnter(event);
+    }
+
+    handlePause();
+  };
+
+  var handleMouseLeave = function handleMouseLeave(event) {
+    if (onMouseLeave) {
+      onMouseLeave(event);
+    }
+
+    handleResume();
+  };
+
+  var handleClickAway = function handleClickAway(event) {
+    if (onClose) {
+      onClose(event, 'clickaway');
+    }
+  };
+
+  var handleExited = function handleExited() {
+    setExited(true);
+  };
+
+  var handleEnter = function handleEnter() {
+    setExited(false);
+  };
+
+  React__default.useEffect(function () {
+    if (!disableWindowBlurListener && open) {
+      window.addEventListener('focus', handleResume);
+      window.addEventListener('blur', handlePause);
+      return function () {
+        window.removeEventListener('focus', handleResume);
+        window.removeEventListener('blur', handlePause);
+      };
+    }
+
+    return undefined;
+  }, [disableWindowBlurListener, handleResume, open]); // So we only render active snackbars.
+
+  if (!open && exited) {
+    return null;
+  }
+
+  return React__default.createElement(ClickAwayListener, _extends({
+    onClickAway: handleClickAway
+  }, ClickAwayListenerProps), React__default.createElement("div", _extends({
+    className: clsx(classes.root, classes["anchorOrigin".concat(capitalize(vertical)).concat(capitalize(horizontal))], className),
+    onMouseEnter: handleMouseEnter,
+    onMouseLeave: handleMouseLeave,
+    ref: ref
+  }, other), React__default.createElement(TransitionComponent, _extends({
+    appear: true,
+    in: open,
+    onEnter: createChainedFunction(handleEnter, onEnter),
+    onEntered: onEntered,
+    onEntering: onEntering,
+    onExit: onExit,
+    onExited: createChainedFunction(handleExited, onExited),
+    onExiting: onExiting,
+    timeout: transitionDuration,
+    direction: vertical === 'top' ? 'down' : 'up'
+  }, TransitionProps), children || React__default.createElement(SnackbarContent$1, _extends({
+    message: message,
+    action: action
+  }, ContentProps)))));
+});
+process.env.NODE_ENV !== "production" ? Snackbar.propTypes = {
+  /**
+   * The action to display.
+   */
+  action: propTypes.node,
+
+  /**
+   * The anchor of the `Snackbar`.
+   */
+  anchorOrigin: propTypes.shape({
+    horizontal: propTypes.oneOf(['left', 'center', 'right']).isRequired,
+    vertical: propTypes.oneOf(['top', 'bottom']).isRequired
+  }),
+
+  /**
+   * The number of milliseconds to wait before automatically calling the
+   * `onClose` function. `onClose` should then set the state of the `open`
+   * prop to hide the Snackbar. This behavior is disabled by default with
+   * the `null` value.
+   */
+  autoHideDuration: propTypes.number,
+
+  /**
+   * Replace the `SnackbarContent` component.
+   */
+  children: propTypes.element,
+
+  /**
+   * Override or extend the styles applied to the component.
+   * See [CSS API](#css) below for more details.
+   */
+  classes: propTypes.object.isRequired,
+
+  /**
+   * @ignore
+   */
+  className: propTypes.string,
+
+  /**
+   * Props applied to the `ClickAwayListener` element.
+   */
+  ClickAwayListenerProps: propTypes.object,
+
+  /**
+   * Props applied to the [`SnackbarContent`](/api/snackbar-content/) element.
+   */
+  ContentProps: propTypes.object,
+
+  /**
+   * If `true`, the `autoHideDuration` timer will expire even if the window is not focused.
+   */
+  disableWindowBlurListener: propTypes.bool,
+
+  /**
+   * When displaying multiple consecutive Snackbars from a parent rendering a single
+   * <Snackbar/>, add the key prop to ensure independent treatment of each message.
+   * e.g. <Snackbar key={message} />, otherwise, the message may update-in-place and
+   * features such as autoHideDuration may be canceled.
+   */
+  key: propTypes.any,
+
+  /**
+   * The message to display.
+   */
+  message: propTypes.node,
+
+  /**
+   * Callback fired when the component requests to be closed.
+   * Typically `onClose` is used to set state in the parent component,
+   * which is used to control the `Snackbar` `open` prop.
+   * The `reason` parameter can optionally be used to control the response to `onClose`,
+   * for example ignoring `clickaway`.
+   *
+   * @param {object} event The event source of the callback.
+   * @param {string} reason Can be: `"timeout"` (`autoHideDuration` expired), `"clickaway"`.
+   */
+  onClose: propTypes.func,
+
+  /**
+   * Callback fired before the transition is entering.
+   */
+  onEnter: propTypes.func,
+
+  /**
+   * Callback fired when the transition has entered.
+   */
+  onEntered: propTypes.func,
+
+  /**
+   * Callback fired when the transition is entering.
+   */
+  onEntering: propTypes.func,
+
+  /**
+   * Callback fired before the transition is exiting.
+   */
+  onExit: propTypes.func,
+
+  /**
+   * Callback fired when the transition has exited.
+   */
+  onExited: propTypes.func,
+
+  /**
+   * Callback fired when the transition is exiting.
+   */
+  onExiting: propTypes.func,
+
+  /**
+   * @ignore
+   */
+  onMouseEnter: propTypes.func,
+
+  /**
+   * @ignore
+   */
+  onMouseLeave: propTypes.func,
+
+  /**
+   * If `true`, `Snackbar` is open.
+   */
+  open: propTypes.bool,
+
+  /**
+   * The number of milliseconds to wait before dismissing after user interaction.
+   * If `autoHideDuration` prop isn't specified, it does nothing.
+   * If `autoHideDuration` prop is specified but `resumeHideDuration` isn't,
+   * we default to `autoHideDuration / 2` ms.
+   */
+  resumeHideDuration: propTypes.number,
+
+  /**
+   * The component used for the transition.
+   */
+  TransitionComponent: propTypes.elementType,
+
+  /**
+   * The duration for the transition, in milliseconds.
+   * You may specify a single timeout for all transitions, or individually with an object.
+   */
+  transitionDuration: propTypes.oneOfType([propTypes.number, propTypes.shape({
+    enter: propTypes.number,
+    exit: propTypes.number
+  })]),
+
+  /**
+   * Props applied to the `Transition` element.
+   */
+  TransitionProps: propTypes.object
+} : void 0;
+var Snackbar$1 = withStyles$1(styles$g, {
+  flip: false,
+  name: 'MuiSnackbar'
+})(Snackbar);
+
+var CheckCircle = createCommonjsModule(function (module, exports) {
+
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = interopRequireDefault(React__default);
+
+var _createSvgIcon = interopRequireDefault(createSvgIcon_1);
+
+var _default = (0, _createSvgIcon.default)(_react.default.createElement("path", {
+  d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+}), 'CheckCircle');
+
+exports.default = _default;
+});
+
+var CheckCircleIcon = unwrapExports(CheckCircle);
+
+var _Error = createCommonjsModule(function (module, exports) {
+
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = interopRequireDefault(React__default);
+
+var _createSvgIcon = interopRequireDefault(createSvgIcon_1);
+
+var _default = (0, _createSvgIcon.default)(_react.default.createElement("path", {
+  d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+}), 'Error');
+
+exports.default = _default;
+});
+
+var ErrorIcon = unwrapExports(_Error);
+
+var Info = createCommonjsModule(function (module, exports) {
+
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = interopRequireDefault(React__default);
+
+var _createSvgIcon = interopRequireDefault(createSvgIcon_1);
+
+var _default = (0, _createSvgIcon.default)(_react.default.createElement("path", {
+  d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+}), 'Info');
+
+exports.default = _default;
+});
+
+var InfoIcon = unwrapExports(Info);
+
+var Warning = createCommonjsModule(function (module, exports) {
+
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = interopRequireDefault(React__default);
+
+var _createSvgIcon = interopRequireDefault(createSvgIcon_1);
+
+var _default = (0, _createSvgIcon.default)(_react.default.createElement("path", {
+  d: "M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"
+}), 'Warning');
+
+exports.default = _default;
+});
+
+var WarningIcon = unwrapExports(Warning);
+
+var variantIcon = {
+    success: CheckCircleIcon,
+    warning: WarningIcon,
+    error: ErrorIcon,
+    info: InfoIcon,
+};
+var defaultProps$1 = {
+    anchorOrigin: {
+        vertical: 'top',
+        horizontal: 'right',
+    },
+    autoHideDuration: 6000
+};
+var ToastInit = function (initProps) {
+    defaultProps$1 = __assign(__assign({}, defaultProps$1), initProps);
+};
+var ToastMessageContent = function (props) {
+    var classes = useStyles1();
+    var className = props.className, message = props.message, onClose = props.onClose, variant = props.variant, other = __rest(props, ["className", "message", "onClose", "variant"]);
+    var Icon = variantIcon[variant];
+    return (React__default.createElement(SnackbarContent$1, __assign({ className: clsx(classes[variant], className), "aria-describedby": "client-snackbar", message: React__default.createElement("span", { className: classes.message },
+            React__default.createElement(Icon, { className: clsx(classes.icon, classes.iconVariant) }),
+            message), action: [
+            React__default.createElement(IconButton$1, { key: "close", "aria-label": "close", color: "inherit", onClick: onClose },
+                React__default.createElement(CloseIcon, { className: classes.icon })),
+        ] }, other)));
+};
+var ToastMessage = function (props) {
+    var className = props.className, variant = props.variant, other = __rest(props, ["className", "variant"]);
+    var snackBarProps = __assign(__assign({}, defaultProps$1), other);
+    return (React__default.createElement(Snackbar$1, __assign({}, snackBarProps),
+        React__default.createElement(ToastMessageContent, __assign({}, props))));
+};
+var useStyles1 = makeStyles$1(function (theme) { return ({
+    success: {
+        backgroundColor: green[600],
+    },
+    error: {
+        backgroundColor: theme.palette.error.dark,
+    },
+    info: {
+        backgroundColor: theme.palette.primary.main,
+    },
+    warning: {
+        backgroundColor: amber[700],
+    },
+    icon: {
+        fontSize: 20,
+    },
+    iconVariant: {
+        opacity: 0.9,
+        marginRight: theme.spacing(1),
+    },
+    message: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+}); });
+
+exports.AppDialog = AppDialog;
 exports.DialogTitle = DialogTitle$1;
-exports.default = AppDialog;
+exports.ToastInit = ToastInit;
+exports.ToastMessage = ToastMessage;
+exports.ToastMessageContent = ToastMessageContent;
 //# sourceMappingURL=index.js.map
