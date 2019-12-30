@@ -119,9 +119,10 @@ var ToastInit = function (initProps) {
 var ToastMessageContent = function (props) {
     var classes = useStyles1();
     var className = props.className, message = props.message, onClose = props.onClose, variant = props.variant, other = __rest(props, ["className", "message", "onClose", "variant"]);
-    var Icon = variantIcon[variant];
-    return (React.createElement(SnackbarContent, __assign({ className: clsx(classes[variant], className), "aria-describedby": "client-snackbar", message: React.createElement("span", { className: classes.message },
-            React.createElement(Icon, { className: clsx(classes.icon, classes.iconVariant) }),
+    var Icon = (variant) ? variantIcon[variant] : '';
+    var variantClass = (variant) ? classes[variant] : '';
+    return (React.createElement(SnackbarContent, __assign({ className: clsx(variantClass, className), "aria-describedby": "client-snackbar", message: React.createElement("span", { className: classes.message },
+            (Icon) && (React.createElement(Icon, { className: clsx(classes.icon, classes.iconVariant) })),
             message), action: [
             React.createElement(IconButton, { key: "close", "aria-label": "close", color: "inherit", onClick: onClose },
                 React.createElement(CloseIcon, { className: classes.icon })),

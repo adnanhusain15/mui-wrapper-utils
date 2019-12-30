@@ -38,21 +38,24 @@ export interface ToastProps extends SnackbarProps {
     className?: string;
     message?: string;
     onClose?: () => void;
-    variant: keyof typeof variantIcon;
+    variant?: keyof typeof variantIcon;
 }
 
 export const ToastMessageContent: FC<ToastProps> = props => {
     const classes = useStyles1();
     const { className, message, onClose, variant, ...other } = props;
-    const Icon = variantIcon[variant];
+    const Icon = (variant) ? variantIcon[variant] : '';
+    const variantClass = (variant) ? classes[variant] : '';
 
     return (
         <SnackbarContent
-            className={clsx(classes[variant], className)}
+            className={clsx(variantClass, className)}
             aria-describedby="client-snackbar"
             message={
                 <span className={classes.message}>
-                    <Icon className={clsx(classes.icon, classes.iconVariant)} />
+                    {
+                        (Icon) && (<Icon className={clsx(classes.icon, classes.iconVariant)} />)
+                    }
                     {message}
                 </span>
             }
