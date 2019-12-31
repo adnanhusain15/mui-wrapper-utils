@@ -14,7 +14,7 @@ export interface ToastProps extends SnackbarProps {
     className?: string;
     message?: string;
     onClose?: () => void;
-    variant?: keyof typeof variantIcon;
+    variant?: keyof typeof variantIcon | '';
 }
 export declare const ToastMessageContent: FC<ToastProps>;
 export declare const ToastMessage: FC<ToastProps>;
