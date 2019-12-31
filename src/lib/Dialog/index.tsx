@@ -10,7 +10,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
-interface DialogProps extends parentDialogProps {
+export interface DialogProps extends parentDialogProps {
     handleClose: Function,
     title: string,
     contentProps?: DialogContentProps,
