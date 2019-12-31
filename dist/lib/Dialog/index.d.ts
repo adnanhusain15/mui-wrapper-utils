@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { DialogProps as parentDialogProps } from '@material-ui/core/Dialog/Dialog';
 import { DialogContentProps } from '@material-ui/core/DialogContent';
-interface DialogProps extends parentDialogProps {
+export interface DialogProps extends parentDialogProps {
     handleClose: Function;
     title: string;
     contentProps?: DialogContentProps;
