@@ -9,29 +9,41 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import clsx from 'clsx';
 
+
+export interface DialogTitleProps {
+    children: React.ReactNode;
+    onClose: () => void;
+    headerContent?: React.ReactNode
+    headerClasses?: Array<string> | string
+    closeButtonClasses?: Array<string> | string
+    isCloseButton?: boolean
+}
 export interface DialogProps extends parentDialogProps {
     handleClose: Function,
-    title: string,
+    headerProps?: Pick<DialogTitleProps, 'headerContent' | 'headerClasses' | 'closeButtonClasses' | 'isCloseButton'>
     contentProps?: DialogContentProps,
     isActionCloseButton?: boolean,
     closeButtonText?: string,
     actionsChildren?: React.ReactNode;
 }
 
-export interface DialogTitleProps {
-    children: React.ReactNode;
-    onClose: () => void;
-}
+
 
 export const DialogTitle: FC<DialogTitleProps> = props => {
     const classes = useDialogTitleStyles();
-    const { children, onClose } = props;
+    const { children, headerContent, headerClasses, closeButtonClasses, isCloseButton = true, onClose } = props;
     return (
-        <MuiDialogTitle disableTypography className={classes.root}>
-            <Typography variant="h6">{children}</Typography>
-            {onClose ? (
-                <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
+        <MuiDialogTitle disableTypography className={clsx(classes.root, headerClasses)}>
+            {
+                (headerContent) ? (headerContent) : (
+                    <Typography variant="h6">{children}</Typography>
+                )
+            }
+
+            {isCloseButton ? (
+                <IconButton aria-label="close" className={clsx(classes.closeButton, closeButtonClasses)} onClick={onClose}>
                     <CloseIcon />
                 </IconButton>
             ) : null}
@@ -69,8 +81,8 @@ const DialogActions: FC<DialogActionProps> = props => {
 
 
 export const AppDialog: FC<DialogProps> = (props) => {
-    const { title, handleClose, children, maxWidth = "sm", contentProps, isActionCloseButton = true, closeButtonText, actionsChildren, ...rest } = props;
-    console.log('Rest props', rest);
+    const { title, headerProps, handleClose, children, maxWidth = "sm", contentProps, isActionCloseButton = true, closeButtonText, actionsChildren, ...rest } = props;
+
     const handleDialogClose = () => {
         handleClose();
     }
@@ -80,7 +92,7 @@ export const AppDialog: FC<DialogProps> = (props) => {
             maxWidth={maxWidth}
             {...rest}
         >
-            <DialogTitle onClose={handleDialogClose}>
+            <DialogTitle onClose={handleDialogClose} {...headerProps}>
                 {title}
             </DialogTitle>
             <MuiDialogContent {...contentProps}>{children}</MuiDialogContent>

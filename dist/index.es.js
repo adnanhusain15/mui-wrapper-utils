@@ -8,6 +8,7 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import clsx from 'clsx';
 import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
@@ -15,7 +16,6 @@ import ErrorIcon from '@material-ui/icons/Error';
 import InfoIcon from '@material-ui/icons/Info';
 import WarningIcon from '@material-ui/icons/Warning';
 import { green, amber } from '@material-ui/core/colors';
-import clsx from 'clsx';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -57,10 +57,10 @@ function __rest(s, e) {
 
 var DialogTitle = function (props) {
     var classes = useDialogTitleStyles();
-    var children = props.children, onClose = props.onClose;
-    return (React.createElement(MuiDialogTitle, { disableTypography: true, className: classes.root },
-        React.createElement(Typography, { variant: "h6" }, children),
-        onClose ? (React.createElement(IconButton, { "aria-label": "close", className: classes.closeButton, onClick: onClose },
+    var children = props.children, headerContent = props.headerContent, headerClasses = props.headerClasses, closeButtonClasses = props.closeButtonClasses, _a = props.isCloseButton, isCloseButton = _a === void 0 ? true : _a, onClose = props.onClose;
+    return (React.createElement(MuiDialogTitle, { disableTypography: true, className: clsx(classes.root, headerClasses) },
+        (headerContent) ? (headerContent) : (React.createElement(Typography, { variant: "h6" }, children)),
+        isCloseButton ? (React.createElement(IconButton, { "aria-label": "close", className: clsx(classes.closeButton, closeButtonClasses), onClick: onClose },
             React.createElement(CloseIcon, null))) : null));
 };
 var DialogActions = function (props) {
@@ -71,13 +71,12 @@ var DialogActions = function (props) {
             (React.createElement(Button, { color: "primary", onClick: function () { onClose && onClose(); } }, (closeButtonText) ? closeButtonText : 'Close'))));
 };
 var AppDialog = function (props) {
-    var title = props.title, handleClose = props.handleClose, children = props.children, _a = props.maxWidth, maxWidth = _a === void 0 ? "sm" : _a, contentProps = props.contentProps, _b = props.isActionCloseButton, isActionCloseButton = _b === void 0 ? true : _b, closeButtonText = props.closeButtonText, actionsChildren = props.actionsChildren, rest = __rest(props, ["title", "handleClose", "children", "maxWidth", "contentProps", "isActionCloseButton", "closeButtonText", "actionsChildren"]);
-    console.log('Rest props', rest);
+    var title = props.title, headerProps = props.headerProps, handleClose = props.handleClose, children = props.children, _a = props.maxWidth, maxWidth = _a === void 0 ? "sm" : _a, contentProps = props.contentProps, _b = props.isActionCloseButton, isActionCloseButton = _b === void 0 ? true : _b, closeButtonText = props.closeButtonText, actionsChildren = props.actionsChildren, rest = __rest(props, ["title", "headerProps", "handleClose", "children", "maxWidth", "contentProps", "isActionCloseButton", "closeButtonText", "actionsChildren"]);
     var handleDialogClose = function () {
         handleClose();
     };
     return (React.createElement(Dialog, __assign({ onClose: handleDialogClose, fullWidth: true, maxWidth: maxWidth }, rest),
-        React.createElement(DialogTitle, { onClose: handleDialogClose }, title),
+        React.createElement(DialogTitle, __assign({ onClose: handleDialogClose }, headerProps), title),
         React.createElement(MuiDialogContent, __assign({}, contentProps), children),
         (isActionCloseButton || actionsChildren) &&
             (React.createElement(DialogActions, { isCloseButton: isActionCloseButton, closeButtonText: closeButtonText, actionsChildren: actionsChildren, onClose: handleDialogClose }))));
