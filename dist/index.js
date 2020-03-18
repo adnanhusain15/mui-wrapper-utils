@@ -21,7 +21,6 @@ var CheckCircleIcon = _interopDefault(require('@material-ui/icons/CheckCircle'))
 var ErrorIcon = _interopDefault(require('@material-ui/icons/Error'));
 var InfoIcon = _interopDefault(require('@material-ui/icons/Info'));
 var WarningIcon = _interopDefault(require('@material-ui/icons/Warning'));
-var Slide = _interopDefault(require('@material-ui/core/Slide'));
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -127,13 +126,10 @@ var ToastMessageContent = function (props) {
                 React.createElement(CloseIcon, { className: classes.icon })),
         ] }, other)));
 };
-var Transition = function (props) {
-    return React.createElement(Slide, __assign({ direction: "right", in: true }, props, { timeout: 380 }));
-};
 var ToastMessage = function (props) {
     var className = props.className, variant = props.variant, TransitionComponent = props.TransitionComponent, autoHideDuration = props.autoHideDuration, anchorOrigin = props.anchorOrigin, open = props.open, onClose = props.onClose;
     var snackBarProps = __assign(__assign({}, defaultProps), { TransitionComponent: TransitionComponent, autoHideDuration: autoHideDuration, anchorOrigin: anchorOrigin, open: open, onClose: onClose });
-    return (React.createElement(Snackbar, __assign({}, snackBarProps, { TransitionComponent: Transition }),
+    return (React.createElement(Snackbar, __assign({}, snackBarProps),
         React.createElement(ToastMessageContent, __assign({}, props.ContentProps, { onClose: props.onClose, message: props.message, variantClassName: variant, className: className }))));
 };
 var useStyles1 = styles.makeStyles(function (theme) { return ({
