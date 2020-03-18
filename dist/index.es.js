@@ -15,7 +15,6 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
 import InfoIcon from '@material-ui/icons/Info';
 import WarningIcon from '@material-ui/icons/Warning';
-import { green, amber } from '@material-ui/core/colors';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -111,9 +110,9 @@ var ToastInit = function (initProps) {
 };
 var ToastMessageContent = function (props) {
     var classes = useStyles1();
-    var className = props.className, message = props.message, onClose = props.onClose, variant = props.variant, other = __rest(props, ["className", "message", "onClose", "variant"]);
-    var Icon = (variant) ? variantIcon[variant] : '';
-    var variantClass = (variant) ? classes[variant] : '';
+    var className = props.className, message = props.message, onClose = props.onClose, variantClassName = props.variantClassName, other = __rest(props, ["className", "message", "onClose", "variantClassName"]);
+    var Icon = (variantClassName) ? variantIcon[variantClassName] : '';
+    var variantClass = (variantClassName) ? classes[variantClassName] : '';
     return (React.createElement(SnackbarContent, __assign({ className: clsx(variantClass, className), "aria-describedby": "client-snackbar", message: React.createElement("span", { className: classes.message },
             (Icon) && (React.createElement(Icon, { className: clsx(classes.icon, classes.iconVariant) })),
             message), action: [
@@ -122,23 +121,23 @@ var ToastMessageContent = function (props) {
         ] }, other)));
 };
 var ToastMessage = function (props) {
-    var className = props.className, variant = props.variant, other = __rest(props, ["className", "variant"]);
-    var snackBarProps = __assign(__assign({}, defaultProps), other);
+    var className = props.className, variant = props.variant, TransitionComponent = props.TransitionComponent, autoHideDuration = props.autoHideDuration, anchorOrigin = props.anchorOrigin, open = props.open, onClose = props.onClose;
+    var snackBarProps = __assign(__assign({}, defaultProps), { TransitionComponent: TransitionComponent, autoHideDuration: autoHideDuration, anchorOrigin: anchorOrigin, open: open, onClose: onClose });
     return (React.createElement(Snackbar, __assign({}, snackBarProps),
-        React.createElement(ToastMessageContent, __assign({}, props))));
+        React.createElement(ToastMessageContent, __assign({}, props.ContentProps, { onClose: props.onClose, message: props.message, variantClassName: variant, className: className }))));
 };
 var useStyles1 = makeStyles(function (theme) { return ({
     success: {
-        backgroundColor: green[600],
+        backgroundColor: theme.palette.success.main,
     },
     error: {
-        backgroundColor: theme.palette.error.dark,
+        backgroundColor: theme.palette.error.main,
     },
     info: {
         backgroundColor: theme.palette.primary.main,
     },
     warning: {
-        backgroundColor: amber[700],
+        backgroundColor: theme.palette.warning.main,
     },
     icon: {
         fontSize: 20,
