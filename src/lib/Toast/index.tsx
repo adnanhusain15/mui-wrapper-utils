@@ -9,6 +9,8 @@ import WarningIcon from '@material-ui/icons/Warning';
 import CloseIcon from '@material-ui/icons/Close';
 import IconButton from '@material-ui/core/IconButton';
 import clsx from 'clsx';
+import { TransitionProps } from '@material-ui/core/transitions/transition';
+import Slide from '@material-ui/core/Slide';
 
 
 
@@ -75,11 +77,15 @@ export const ToastMessageContent: FC<ToastContentProps> = props => {
     )
 }
 
+const Transition: FC<TransitionProps> = (props) => {
+    return <Slide direction="right" in={true} {...props} timeout={380} />;
+}
+
 export const ToastMessage: FC<ToastProps> = props => {
     const { className, variant, TransitionComponent, autoHideDuration, anchorOrigin, open, onClose } = props;
     const snackBarProps = { ...defaultProps, TransitionComponent, autoHideDuration, anchorOrigin, open, onClose };
     return (
-        <Snackbar {...snackBarProps}>
+        <Snackbar {...snackBarProps} TransitionComponent={Transition}>
             <ToastMessageContent
                 {...props.ContentProps}
                 onClose={props.onClose}
