@@ -1,13 +1,12 @@
 import React, { FC } from 'react';
 import { Theme, makeStyles } from '@material-ui/core/styles';
 import Snackbar, { SnackbarProps } from '@material-ui/core/Snackbar';
-import SnackbarContent from '@material-ui/core/SnackbarContent';
+import SnackbarContent, { SnackbarContentProps } from '@material-ui/core/SnackbarContent';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
 import InfoIcon from '@material-ui/icons/Info';
 import WarningIcon from '@material-ui/icons/Warning';
 import CloseIcon from '@material-ui/icons/Close';
-import { amber, green } from '@material-ui/core/colors';
 import IconButton from '@material-ui/core/IconButton';
 import clsx from 'clsx';
 
@@ -37,15 +36,22 @@ export const ToastInit = (initProps: DefaultProps) => {
 export interface ToastProps extends SnackbarProps {
     className?: string;
     message?: string;
-    onClose?: () => void;
-    variant?: keyof typeof variantIcon | string;
+    onClose?: () => void
+    variant?: keyof typeof variantIcon;
 }
 
-export const ToastMessageContent: FC<ToastProps> = props => {
+export interface ToastContentProps extends SnackbarContentProps {
+    className?: string
+    onClose?: () => void
+    message?: string
+    variantClassName?: keyof typeof variantIcon;
+}
+
+export const ToastMessageContent: FC<ToastContentProps> = props => {
     const classes = useStyles1();
-    const { className, message, onClose, variant, ...other } = props;
-    const Icon = (variant) ? variantIcon[variant] : '';
-    const variantClass = (variant) ? classes[variant] : '';
+    const { className, message, onClose, variantClassName, ...other } = props;
+    const Icon = (variantClassName) ? variantIcon[variantClassName] : '';
+    const variantClass = (variantClassName) ? classes[variantClassName] : '';
 
     return (
         <SnackbarContent
@@ -70,30 +76,34 @@ export const ToastMessageContent: FC<ToastProps> = props => {
 }
 
 export const ToastMessage: FC<ToastProps> = props => {
-    const { className, variant, ...other } = props;
-    const snackBarProps = { ...defaultProps, ...other };
+    const { className, variant, TransitionComponent, autoHideDuration, anchorOrigin, open, onClose } = props;
+    const snackBarProps = { ...defaultProps, TransitionComponent, autoHideDuration, anchorOrigin, open, onClose };
     return (
         <Snackbar {...snackBarProps}>
-            <ToastMessageContent {...props} />
+            <ToastMessageContent
+                {...props.ContentProps}
+                onClose={props.onClose}
+                message={props.message}
+                variantClassName={variant}
+                className={className}
+            />
         </Snackbar >
     )
 }
 
 
-
-
 const useStyles1 = makeStyles((theme: Theme) => ({
     success: {
-        backgroundColor: green[600],
+        backgroundColor: theme.palette.success.main,
     },
     error: {
-        backgroundColor: theme.palette.error.dark,
+        backgroundColor: theme.palette.error.main,
     },
     info: {
         backgroundColor: theme.palette.primary.main,
     },
     warning: {
-        backgroundColor: amber[700],
+        backgroundColor: theme.palette.warning.main,
     },
     icon: {
         fontSize: 20,
